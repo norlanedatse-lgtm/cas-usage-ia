@@ -1,0 +1,496 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Cas d'usage IA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout : outil en une colonne, onglets en tête, une section du formulaire à la fois, barre d'actions collée en bas */
+:root{
+  --bg:#F4F6F8; --surface:#FFFFFF; --sunk:#EAEEF2; --line:#D5DCE3;
+  --fg:#16212C; --muted:#5A6878; --accent:#1E4FA8; --accent-ink:#FFFFFF; --accent-soft:#E3EBF8;
+  --warn:#9A5B00; --warn-soft:#FFF2DB; --crit:#A8322A; --crit-soft:#FBE6E3; --ok:#1F7A4D; --ok-soft:#E0F2E8;
+  --display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --body:"Source Sans 3", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#10161D; --surface:#18212B; --sunk:#0C1117; --line:#2C3946;
+  --fg:#E6ECF2; --muted:#93A2B2; --accent:#7FA6F0; --accent-ink:#0C1420; --accent-soft:#1D2C45;
+  --warn:#F0B35A; --warn-soft:#3A2A10; --crit:#F08A80; --crit-soft:#3D1C19; --ok:#6FCB98; --ok-soft:#163324; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#10161D; --surface:#18212B; --sunk:#0C1117; --line:#2C3946;
+  --fg:#E6ECF2; --muted:#93A2B2; --accent:#7FA6F0; --accent-ink:#0C1420; --accent-soft:#1D2C45;
+  --warn:#F0B35A; --warn-soft:#3A2A10; --crit:#F08A80; --crit-soft:#3D1C19; --ok:#6FCB98; --ok-soft:#163324; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.5}
+.wrap{max-width:760px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 120px}
+header.top{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(26px,6vw,34px);line-height:1.1;margin:0;text-wrap:balance}
+.lede{color:var(--muted);margin:0;max-width:62ch}
+nav.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:14px 0 18px;overflow-x:auto}
+nav.tabs button{font:600 15px var(--body);background:none;border:0;color:var(--muted);padding:10px 12px;border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap}
+nav.tabs button[aria-selected="true"]{color:var(--fg);border-bottom-color:var(--accent)}
+nav.tabs .count{font-family:var(--mono);font-size:11px;background:var(--sunk);border-radius:99px;padding:1px 7px;margin-left:4px}
+.banner{font-size:14px;padding:10px 12px;border-radius:8px;background:var(--warn-soft);color:var(--fg);border:1px solid var(--line);margin-bottom:14px}
+/* stepper */
+.steps{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin-bottom:14px;scrollbar-width:thin}
+.steps button{flex:0 0 auto;display:flex;align-items:center;gap:6px;font:600 13px var(--body);color:var(--muted);background:var(--surface);border:1px solid var(--line);border-radius:99px;padding:5px 11px 5px 6px;cursor:pointer}
+.steps .n{font-family:var(--mono);font-size:11px;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;background:var(--sunk)}
+.steps button.done .n{background:var(--ok-soft);color:var(--ok)}
+.steps button.cur{color:var(--fg);border-color:var(--accent)}
+.steps button.cur .n{background:var(--accent);color:var(--accent-ink)}
+.progress{height:4px;background:var(--sunk);border-radius:2px;margin-bottom:18px;overflow:hidden}
+.progress i{display:block;height:100%;background:var(--accent);transition:width .25s}
+section.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px clamp(16px,4vw,26px);display:flex;flex-direction:column;gap:22px}
+.panel h2{font-family:var(--display);font-weight:700;font-size:22px;line-height:1.2;margin:0 0 4px;text-wrap:balance}
+.panel .goal{color:var(--muted);margin:0;font-size:15px}
+.sub{border-top:1px dashed var(--line);padding-top:18px;display:flex;flex-direction:column;gap:22px}
+.sub>.subhead{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.field{display:flex;flex-direction:column;gap:8px;min-width:0}
+.field>label,.field>.q{font-weight:600;font-size:16px}
+.req{color:var(--crit);margin-left:3px}
+.help{font-size:14px;color:var(--muted);margin-top:-4px}
+input[type=text],select,textarea{font:16px var(--body);color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;width:100%}
+textarea{min-height:92px;resize:vertical}
+input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible,.opt input:focus-visible+span{outline:2px solid var(--accent);outline-offset:2px}
+.opts{display:flex;flex-wrap:wrap;gap:8px}
+.opt{position:relative;cursor:pointer}
+.opt input{position:absolute;opacity:0;pointer-events:none}
+.opt span{display:inline-block;padding:7px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg);font-size:15px;line-height:1.3}
+.opt input:checked+span{background:var(--accent-soft);border-color:var(--accent);color:var(--fg);font-weight:600}
+.opt input[type=checkbox]:checked+span::before{content:"✓ ";color:var(--accent)}
+.note{font-size:14px;padding:12px 14px;border-radius:8px;background:var(--sunk);border-left:3px solid var(--warn)}
+.note.info{border-left-color:var(--accent)}
+.bar{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);padding-top:10px;padding-bottom:calc(10px + env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));z-index:5}
+.bar .in{max-width:760px;margin:0 auto;display:flex;gap:10px;align-items:center;justify-content:space-between}
+.bar .mid{font-family:var(--mono);font-size:12px;color:var(--muted);text-align:center;flex:1}
+.btn{font:600 15px var(--body);padding:10px 16px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.ghost{border-color:transparent;background:none;color:var(--accent);padding-inline:6px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.err{color:var(--crit);font-size:14px}
+/* récap / fiche */
+.spec{border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.spec .row{display:grid;grid-template-columns:150px 1fr;border-top:1px solid var(--line)}
+.spec .row:first-child{border-top:0}
+.spec .k{background:var(--sunk);padding:10px 12px;font-weight:700;font-size:14px}
+.spec .v{padding:10px 12px;font-size:15px;min-width:0;overflow-wrap:anywhere;white-space:pre-line}
+.spec .v .empty{color:var(--muted);font-style:italic}
+@media (max-width:520px){.spec .row{grid-template-columns:1fr}.spec .k{padding-bottom:4px}}
+.flags{display:flex;flex-direction:column;gap:8px}
+.flag{display:flex;gap:10px;align-items:flex-start;font-size:14px;padding:9px 12px;border-radius:8px;background:var(--warn-soft)}
+.flag.crit{background:var(--crit-soft)}
+.flag.info{background:var(--accent-soft)}
+.flag b{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;flex:0 0 auto;padding-top:2px}
+/* listes */
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+.list{display:flex;flex-direction:column;gap:10px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:grid;grid-template-columns:1fr auto;gap:4px 12px;cursor:pointer;text-align:left;font:inherit;color:inherit;width:100%}
+.card:hover{border-color:var(--accent)}
+.card .t{font-weight:700;font-size:17px;min-width:0}
+.card .m{grid-column:1/-1;font-size:14px;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 12px}
+.card .id{font-family:var(--mono);font-size:12px}
+.pill{font-family:var(--mono);font-size:11px;letter-spacing:.04em;text-transform:uppercase;padding:3px 8px;border-radius:99px;white-space:nowrap;align-self:start;background:var(--sunk);color:var(--fg)}
+.pill.s-Nouvelle{background:var(--accent-soft);color:var(--accent)}
+.pill.s-Acceptée,.pill.s-Livrée{background:var(--ok-soft);color:var(--ok)}
+.pill.s-Refusée{background:var(--crit-soft);color:var(--crit)}
+.pill.s-En-qualification,.pill.s-En-cours{background:var(--warn-soft);color:var(--warn)}
+.urg-Critique,.urg-Élevé{color:var(--crit);font-weight:600}
+.empty-state{border:1px dashed var(--line);border-radius:10px;padding:26px 18px;text-align:center;color:var(--muted)}
+.detail{display:flex;flex-direction:column;gap:18px}
+.detail h2{font-family:var(--display);font-size:24px;margin:0;line-height:1.15;text-wrap:balance}
+.qual{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:14px}
+.qual h3,.detail h3{font-family:var(--display);font-size:18px;margin:0}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:520px){.row2{grid-template-columns:1fr}}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom,0px));background:var(--fg);color:var(--bg);padding:9px 16px;border-radius:8px;font-size:14px;z-index:9}
+.success{display:flex;flex-direction:column;gap:12px;align-items:flex-start}
+.success .big{font-family:var(--display);font-size:24px;font-weight:700}
+.mono{font-family:var(--mono)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <span class="eyebrow">Mission acculturation IA · Recueil des besoins</span>
+    <h1>Proposer un cas d'usage IA</h1>
+    <p class="lede">Décrivez une tâche que l'IA pourrait faciliter. Seules quelques questions sont obligatoires ; les autres s'affichent selon votre besoin. Comptez 10 à 15 minutes.</p>
+  </header>
+  <div id="banner"></div>
+  <main id="view"></main>
+</div>
+<div class="bar" id="bar" hidden><div class="in" id="barIn"></div></div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(function(){
+"use strict";
+/* ================== CONFIGURATION ==================
+   emailDestinataire : adresse qui reçoit les demandes (mode e-mail).
+   relayUrl : laisser vide. À renseigner seulement si un relais vers Grist
+   est mis en place (voir README) ; l'envoi se fait alors directement dans Grist. */
+const CONFIG = {
+  emailDestinataire: "datastudiorisques.mnd@developpement-durable.gouv.fr",
+  relayUrl: ""
+};
+/* =================================================== */
+/* ---------- Schéma du formulaire ---------- */
+const NSP = "Je ne sais pas";
+const has = (a,k,v)=>Array.isArray(a[k]) && a[k].includes(v);
+const DOC_TYPES = ["Produire un nouveau document","Retraiter ou transformer un document existant"];
+const SECTIONS = [
+ {id:"besoin", title:"Identification et description du besoin", short:"Besoin",
+  goal:"Comprendre le problème métier avant de réfléchir à la solution.",
+  fields:[
+   {id:"nom",label:"Nom du cas d'usage",type:"text",req:true,ph:"Ex. Synthèse des comptes rendus de COPIL"},
+   {id:"service",label:"Service / équipe concernée",type:"select",req:true,opts:["Direction générale","Ressources humaines","Finance / Contrôle de gestion","Juridique","Commercial","Marketing / Communication","Achats","Opérations / Production","Systèmes d'information","Qualité / Conformité","Autre"]},
+   {id:"demandeur",label:"Votre nom",type:"text",help:"Pour que l'équipe puisse vous recontacter."},
+   {id:"besoinTxt",label:"Quel est votre besoin ?",type:"textarea",req:true},
+   {id:"tache",label:"Quelle tâche souhaitez-vous faciliter ?",type:"textarea"},
+   {id:"actuel",label:"Comment réalisez-vous cette tâche aujourd'hui ?",type:"textarea"},
+   {id:"probleme",label:"Quel est le principal problème rencontré ?",type:"checks",opts:["Tâche répétitive","Volume important de documents","Recherche trop longue","Difficulté d'analyse","Rédaction chronophage","Mise en forme complexe","Erreurs fréquentes","Autre"]},
+   {id:"resultat",label:"Quel résultat souhaitez-vous obtenir ?",type:"textarea"},
+   {id:"frequence",label:"À quelle fréquence réalisez-vous cette tâche ?",type:"radio",opts:["Ponctuelle","Quotidienne","Hebdomadaire","Mensuelle"]},
+   {id:"temps",label:"Combien de temps y consacrez-vous à chaque fois ?",type:"radio",opts:["Moins de 30 min","30 min à 2 h","2 h à 1 jour","Plus d'1 jour"]},
+   {id:"urgence",label:"Quel est le niveau d'urgence ?",type:"radio",opts:["Faible","Normal","Élevé","Critique"]},
+   {id:"personnes",label:"Combien de personnes sont concernées ?",type:"radio",opts:["1","2 à 5","6 à 20","Plus de 20"]}
+  ]},
+ {id:"type", title:"Type de cas d'usage IA", short:"Type d'usage",
+  goal:"Vos choix déterminent les questions complémentaires affichées ensuite.",
+  fields:[
+   {id:"types",label:"Que souhaitez-vous faire avec l'IA ?",type:"checks",req:true,help:"Plusieurs réponses possibles.",opts:["Faire une synthèse ou un résumé","Réaliser une analyse ou une évaluation","Produire un nouveau document","Retraiter ou transformer un document existant","Améliorer la recherche d'informations","Extraire ou structurer des données","Traduire ou reformuler un contenu","Automatiser une tâche répétitive","Autre besoin"]},
+   {id:"typeAutre",label:"Précisez votre besoin",type:"text",show:a=>has(a,"types","Autre besoin")},
+   {group:"Recherche d'informations",show:a=>has(a,"types","Améliorer la recherche d'informations"),fields:[
+     {id:"recSources",label:"Quelles sources documentaires doivent être interrogées ?",type:"textarea"},
+     {id:"recFiltres",label:"Quels filtres ou critères permettent de juger un résultat pertinent ?",type:"textarea"},
+     {id:"recRef",label:"Les réponses doivent-elles citer leurs références ?",type:"radio",opts:["Oui, obligatoirement","Si possible","Non"]}]},
+   {group:"Extraction de données",show:a=>has(a,"types","Extraire ou structurer des données"),fields:[
+     {id:"extChamps",label:"Quelles informations faut-il extraire ?",type:"textarea",ph:"Ex. date, fournisseur, montant HT, échéance"},
+     {id:"extCible",label:"Où doivent-elles être rangées ?",type:"radio",opts:["Tableau Excel","Fichier CSV","Application métier","Autre"]}]},
+   {group:"Traduction / reformulation",show:a=>has(a,"types","Traduire ou reformuler un contenu"),fields:[
+     {id:"tradLangues",label:"Langue source et langue cible",type:"text",ph:"Ex. anglais → français"},
+     {id:"tradTon",label:"Quel rendu attendez-vous ?",type:"radio",opts:["Fidèle au texte d'origine","Adapté à un autre public","Simplifié"]}]},
+   {group:"Automatisation",show:a=>has(a,"types","Automatiser une tâche répétitive"),fields:[
+     {id:"autoDecl",label:"Qu'est-ce qui déclenche la tâche ?",type:"radio",opts:["Je la lance moi-même","Réception d'un e-mail","Dépôt d'un fichier","Date ou horaire fixe","Autre"]},
+     {id:"autoOutils",label:"Quels outils ou applications sont concernés ?",type:"text",ph:"Ex. Outlook, SharePoint, Excel"}]}
+  ]},
+ {id:"entrees", title:"Données d'entrée et documents sources", short:"Entrées",
+  goal:"Le nombre de fichiers ne suffit pas : format, volume et structure changent tout.",
+  fields:[
+   {id:"entreeTypes",label:"Quel type d'entrée utilisez-vous ?",type:"checks",opts:["Texte","Word","PDF","Excel","PowerPoint","Image / scanné","Courriel","Page web","Autre"]},
+   {id:"dispo",label:"Disposez-vous déjà des documents sources ?",type:"radio",opts:["Oui","Non","Partiellement"]},
+   {id:"nbDocs",label:"Combien de documents faut-il traiter ?",type:"radio",opts:["1","2 à 5","6 à 20","21 à 50","Plus de 50"]},
+   {id:"volume",label:"Quel est le volume approximatif ?",type:"radio",opts:["Quelques pages","10 à 50 pages","50 à 200 pages","Plus de 200 pages","Inconnu"]},
+   {id:"structure",label:"Les documents ont-ils tous la même structure ?",type:"radio",opts:["Oui","Non","Partiellement"]},
+   {id:"scannes",label:"Les documents sont-ils modifiables ou scannés ?",type:"radio",opts:["Modifiables","Scannés","Les deux"]},
+   {id:"tabImg",label:"Contiennent-ils des tableaux ou des images ?",type:"radio",opts:["Oui","Non"]},
+   {id:"memesSources",label:"Les sources sont-elles toujours les mêmes ?",type:"radio",opts:["Oui","Non","Cela dépend"]},
+   {id:"acces",label:"Comment les documents sont-ils accessibles ?",type:"checks",opts:["Téléchargement manuel","Dossier partagé","Messagerie","Application métier","Base documentaire","Autre"]},
+   {id:"exemple",label:"Pouvez-vous fournir un exemple représentatif ?",type:"radio",opts:["Oui, sur demande","Lien autorisé","Non disponible"],show:a=>a.dispo!=="Non"},
+   {id:"exempleLien",label:"Lien vers l'exemple",type:"text",help:"Uniquement un emplacement interne autorisé. Ne collez pas de contenu confidentiel ici.",show:a=>a.exemple==="Lien autorisé"},
+   {id:"docsDesc",label:"Décrivez les documents utilisés et les difficultés liées à leur traitement",type:"textarea"}
+  ]},
+ {id:"confid", title:"Confidentialité et sensibilité des données", short:"Confidentialité",
+  goal:"Pour orienter vers un outil adapté et vérifier les règles internes.",
+  fields:[
+   {id:"donnees",label:"Quel type de données les documents contiennent-ils ?",type:"checks",req:true,opts:["Données publiques","Données internes non confidentielles","Données professionnelles confidentielles","Données personnelles","Données personnelles sensibles","Données financières, RH, juridiques ou contractuelles confidentielles",NSP]},
+   {id:"identifiants",label:"Les documents contiennent-ils des noms, coordonnées ou identifiants personnels ?",type:"radio",opts:["Oui","Non",NSP],show:a=>has(a,"donnees","Données personnelles")||has(a,"donnees","Données personnelles sensibles")||has(a,"donnees",NSP)},
+   {id:"tresSensibles",label:"Contiennent-ils des informations médicales, bancaires ou d'autres données particulièrement sensibles ?",type:"radio",opts:["Oui","Non",NSP],show:a=>has(a,"donnees","Données personnelles")||has(a,"donnees","Données personnelles sensibles")||has(a,"donnees",NSP)},
+   {id:"anonym",label:"Les informations peuvent-elles être anonymisées ou masquées ?",type:"radio",opts:["Oui","Non",NSP]},
+   {id:"restrictions",label:"Existe-t-il des restrictions de transfert ou de stockage de ces données ?",type:"textarea"},
+   {id:"outilImpose",label:"Un outil IA particulier est-il imposé ou autorisé par votre organisation ?",type:"text"},
+   {note:"Une réponse à ce formulaire ne vaut pas autorisation de traiter les données. L'équipe vérifiera les règles internes et les garanties de l'outil retenu avant tout traitement."}
+  ]},
+ {id:"sortie", title:"Résultat attendu et format de sortie", short:"Sortie",
+  goal:"Sous quelle forme le résultat doit-il vous parvenir ?",
+  fields:[
+   {id:"formats",label:"Format de sortie souhaité",type:"checks",opts:["Copier-coller dans une réponse","Word (.docx)","Excel (.xlsx)","PDF","PowerPoint (.pptx)","Texte brut","Tableau structuré","Autre"]},
+   {id:"modele",label:"Existe-t-il un modèle à respecter ?",type:"radio",opts:["Non, format libre","Oui, un modèle existe",NSP]},
+   {id:"longueur",label:"Longueur souhaitée",type:"radio",opts:["Très courte (quelques lignes)","Synthétique (1 page max.)","Détaillée","Variable selon le besoin"]},
+   {id:"recup",label:"Mode de récupération",type:"radio",opts:["Réponse directement dans l'outil IA","Fichier à télécharger","Dépôt dans un espace partagé","Intégration dans une application métier"]},
+   {id:"destination",label:"Destination finale du résultat",type:"text",ph:"Ex. envoi au comité de direction"},
+   {id:"modifiable",label:"Le résultat doit-il être modifiable ?",type:"radio",opts:["Oui","Non"]},
+   {id:"nbFichiers",label:"Faut-il produire un seul fichier ou plusieurs ?",type:"radio",opts:["Un seul","Plusieurs"]},
+   {id:"elements",label:"Le résultat doit-il contenir…",type:"checks",opts:["Des tableaux","Des graphiques","Des images","Des annexes"]},
+   {id:"multiSources",label:"Faut-il reprendre des informations issues de plusieurs sources ?",type:"radio",opts:["Oui","Non"]},
+   {id:"reutil",label:"Le résultat doit-il être réutilisé automatiquement dans un autre outil ?",type:"radio",opts:["Oui","Non",NSP]},
+   {id:"precisionsSortie",label:"Précisions sur le résultat attendu",type:"textarea"}
+  ]},
+ {id:"forme", title:"Contraintes de mise en forme et de contenu", short:"Mise en forme",
+  goal:"Affichée parce que votre besoin consiste à produire ou retraiter des documents.",
+  show:a=>DOC_TYPES.some(t=>has(a,"types",t)),
+  fields:[
+   {id:"modeleDoc",label:"Existe-t-il un document modèle à reproduire ?",type:"radio",opts:["Oui","Non"]},
+   {id:"plan",label:"Un plan précis ou des rubriques imposées sont-ils nécessaires ?",type:"textarea"},
+   {id:"styles",label:"Faut-il respecter des styles (titres, polices, couleurs, espacements) ?",type:"textarea"},
+   {id:"structDoc",label:"Le document doit-il comporter…",type:"checks",opts:["Une page de garde","Un sommaire","Des annexes"]},
+   {id:"obligatoire",label:"Quels éléments doivent absolument être présents dans le résultat final ?",type:"textarea",ph:"Ex. une introduction, une synthèse des constats, un tableau de recommandations et une conclusion, selon le modèle Word fourni."},
+   {id:"interdit",label:"Y a-t-il des informations à ne pas inclure ?",type:"textarea"},
+   {id:"citerSources",label:"Faut-il citer les sources, pages ou documents d'origine ?",type:"radio",opts:["Oui","Non"]},
+   {id:"fidelite",label:"La structure initiale doit-elle être conservée ?",type:"radio",opts:["Oui, à l'identique","Non, elle peut être modifiée"]},
+   {id:"qualite",label:"Quels critères permettront de juger le résultat satisfaisant ?",type:"textarea"},
+   {note:"Si vous avez un modèle, un exemple de bon résultat ou un exemple à éviter, mentionnez-le : l'équipe vous le demandera.",kind:"info"}
+  ]},
+ {id:"traitement", title:"Étapes de traitement souhaitées", short:"Traitement",
+  goal:"Pour distinguer un simple usage d'assistant IA d'un véritable workflow.",
+  fields:[
+   {id:"operations",label:"Quelles opérations l'IA doit-elle réaliser ?",type:"checks",opts:["Lire et comprendre les documents","Extraire les informations nécessaires","Comparer plusieurs documents ou données","Vérifier des critères précis","Identifier erreurs, incohérences ou manques","Classer les informations par catégorie","Synthétiser ou analyser les résultats","Rédiger un contenu","Mettre en forme le document final","Exporter dans le format demandé"]},
+   {id:"etapesOblig",label:"Quelles étapes sont obligatoires ?",type:"textarea"},
+   {id:"ordre",label:"Certaines étapes peuvent-elles se faire dans un ordre différent ?",type:"text"},
+   {id:"verifHumaine",label:"Le résultat doit-il être vérifié par une personne avant utilisation ?",type:"radio",opts:["Oui","Non",NSP]},
+   {id:"lancement",label:"Le traitement doit-il être lancé…",type:"radio",opts:["Manuellement","Automatiquement",NSP]}
+  ]},
+ {id:"validation", title:"Critères de validation et bénéfices attendus", short:"Validation",
+  goal:"Comment vérifier que la solution répond réellement au besoin ?",
+  fields:[
+   {id:"resultatConcret",label:"Quel résultat concret attendez-vous ?",type:"textarea"},
+   {id:"precision",label:"Quel niveau de précision est nécessaire ?",type:"radio",opts:["Indicatif","Bon, avec relecture","Très élevé, aucune erreur tolérée"]},
+   {id:"erreurs",label:"Quelles erreurs seraient inacceptables ?",type:"textarea"},
+   {id:"controle",label:"Un contrôle humain est-il obligatoire ?",type:"radio",opts:["Oui","Non"]},
+   {id:"gain",label:"Combien de temps souhaiteriez-vous économiser ?",type:"text",ph:"Ex. 3 h par mois"},
+   {id:"usages",label:"Combien de fois le traitement sera-t-il utilisé ?",type:"radio",opts:["Une seule fois","Quelques fois par an","Chaque mois","Chaque semaine ou plus"]},
+   {id:"exempleIO",label:"Disposez-vous d'un exemple d'entrée et du résultat attendu correspondant ?",type:"radio",opts:["Oui, les deux","Entrée seulement","Non"]},
+   {note:"Un exemple réel d'entrée accompagné de la sortie attendue facilite énormément la conception et les tests.",kind:"info"}
+  ]}
+];
+const STATUTS = ["Nouvelle","En qualification","Acceptée","En cours","Livrée","Refusée"];
+
+/* ---------- État ---------- */
+let A = {};            // réponses en cours
+let step = 0;
+const tab="form";
+let submitted=null, showErrors=false;
+try{ const d=JSON.parse(localStorage.getItem("draft")||"null"); if(d&&d.A){A=d.A;step=d.step||0;} }catch(e){}
+function saveDraft(){ try{localStorage.setItem("draft",JSON.stringify({A,step}))}catch(e){} }
+function clearDraft(){ try{localStorage.removeItem("draft")}catch(e){} }
+
+const $ = s=>document.querySelector(s);
+const el=(tag,attrs,...kids)=>{const n=document.createElement(tag);if(attrs)for(const k in attrs){const v=attrs[k];if(v==null||v===false)continue;if(k==="class")n.className=v;else if(k.startsWith("on"))n.addEventListener(k.slice(2),v);else if(k==="text")n.textContent=v;else n.setAttribute(k,v===true?"":v);}for(const c of kids.flat()){if(c==null||c===false)continue;n.append(c.nodeType?c:document.createTextNode(c));}return n;};
+function toast(msg){const t=$("#toast");t.textContent=msg;t.hidden=false;clearTimeout(toast._t);toast._t=setTimeout(()=>t.hidden=true,2400);}
+
+const visibleSections=()=>SECTIONS.filter(s=>!s.show||s.show(A));
+function stepsList(){return [...visibleSections(),{id:"recap",short:"Envoi",title:"Récapitulatif et envoi"}];}
+function flatFields(sec){const out=[];for(const f of sec.fields){if(f.group){if(f.show(A))out.push(...f.fields)}else if(f.id&&(!f.show||f.show(A)))out.push(f)}return out;}
+const filled=v=>Array.isArray(v)?v.length>0:!!(v&&String(v).trim());
+function missing(sec){return flatFields(sec).filter(f=>f.req&&!filled(A[f.id]));}
+function sectionDone(sec){const fs=flatFields(sec);return fs.some(f=>filled(A[f.id]))&&missing(sec).length===0;}
+
+/* ---------- Rendu des champs ---------- */
+function fieldNode(f){
+  const box=el("div",{class:"field"});
+  const lid="f_"+f.id;
+  const lab=(f.type==="radio"||f.type==="checks")?el("div",{class:"q",id:lid+"_l"},f.label,f.req?el("span",{class:"req","aria-hidden":"true"},"*"):null)
+    :el("label",{for:lid},f.label,f.req?el("span",{class:"req","aria-hidden":"true"},"*"):null);
+  box.append(lab);
+  if(f.help) box.append(el("div",{class:"help"},f.help));
+  if(f.type==="text") box.append(el("input",{type:"text",id:lid,value:A[f.id]||"",placeholder:f.ph||null,oninput:e=>{A[f.id]=e.target.value;saveDraft();}}));
+  else if(f.type==="textarea"){const t=el("textarea",{id:lid,placeholder:f.ph||null,oninput:e=>{A[f.id]=e.target.value;saveDraft();}});t.value=A[f.id]||"";box.append(t);}
+  else if(f.type==="select"){const s=el("select",{id:lid,onchange:e=>{A[f.id]=e.target.value;saveDraft();}},el("option",{value:""},"Choisir…"),f.opts.map(o=>el("option",{value:o,selected:A[f.id]===o},o)));box.append(s);}
+  else{
+    const multi=f.type==="checks";
+    const wrap=el("div",{class:"opts",role:multi?"group":"radiogroup","aria-labelledby":lid+"_l"});
+    f.opts.forEach((o,i)=>{
+      const checked=multi?has(A,f.id,o):A[f.id]===o;
+      const inp=el("input",{type:multi?"checkbox":"radio",name:lid,id:lid+"_"+i,value:o,checked});
+      inp.addEventListener("change",()=>{
+        if(multi){const cur=new Set(A[f.id]||[]);inp.checked?cur.add(o):cur.delete(o);A[f.id]=f.opts.filter(x=>cur.has(x));}
+        else A[f.id]=o;
+        saveDraft();
+        const y=window.scrollY;renderForm();window.scrollTo(0,y);
+        const again=document.getElementById(lid+"_"+i);if(again)again.focus({preventScroll:true});
+      });
+      wrap.append(el("label",{class:"opt"},inp,el("span",null,o)));
+    });
+    box.append(wrap);
+  }
+  if(showErrors&&f.req&&!filled(A[f.id])) box.append(el("div",{class:"err"},"Cette réponse est nécessaire pour traiter votre demande."));
+  return box;
+}
+
+function renderForm(){
+  const v=$("#view");v.replaceChildren();
+  if(submitted){renderSuccess();return;}
+  const list=stepsList(); if(step>=list.length) step=list.length-1;
+  const cur=list[step];
+  const nav=el("div",{class:"steps"});
+  list.forEach((s,i)=>{
+    const done=s.id!=="recap"&&sectionDone(s);
+    nav.append(el("button",{class:(i===step?"cur ":"")+(done?"done":""),type:"button","aria-current":i===step?"step":null,onclick:()=>{step=i;showErrors=false;saveDraft();renderForm();window.scrollTo(0,0);}},el("span",{class:"n"},done?"✓":String(i+1)),s.short));
+  });
+  v.append(nav, el("div",{class:"progress"},el("i",{style:`width:${Math.round(step/(list.length-1)*100)}%`})));
+  if(cur.id==="recap"){renderRecap(v);}
+  else{
+    const p=el("section",{class:"panel","aria-labelledby":"h_"+cur.id});
+    p.append(el("div",null,el("span",{class:"eyebrow"},`Section ${SECTIONS.indexOf(cur)+1} sur 8`),el("h2",{id:"h_"+cur.id},cur.title),el("p",{class:"goal"},cur.goal)));
+    for(const f of cur.fields){
+      if(f.note){p.append(el("div",{class:"note"+(f.kind?" "+f.kind:"")},f.note));continue;}
+      if(f.group){if(!f.show(A))continue;const g=el("div",{class:"sub"},el("div",{class:"subhead"},"Questions complémentaires · "+f.group));f.fields.forEach(x=>g.append(fieldNode(x)));p.append(g);continue;}
+      if(f.show&&!f.show(A))continue;
+      p.append(fieldNode(f));
+    }
+    if(step===0&&!Object.keys(A).some(k=>filled(A[k]))) p.append(el("div",{class:"note info"},"Pour voir à quoi ressemble une demande complète, ",el("button",{class:"btn ghost",type:"button",onclick:fillExample},"remplir avec un exemple"),"."));
+    v.append(p);
+  }
+  renderBar();
+}
+
+function renderBar(){
+  const bar=$("#bar"),inn=$("#barIn");
+  if(tab!=="form"||submitted){bar.hidden=true;return;}
+  bar.hidden=false;
+  const list=stepsList();const cur=list[step];
+  const prev=el("button",{class:"btn",type:"button",disabled:step===0,onclick:()=>{step--;showErrors=false;saveDraft();renderForm();window.scrollTo(0,0);}},"Précédent");
+  const mid=el("div",{class:"mid"},`${step+1} / ${list.length}`);
+  let next;
+  if(cur.id==="recap") next=el("button",{class:"btn primary",type:"button",onclick:submit},"Envoyer la demande");
+  else next=el("button",{class:"btn primary",type:"button",onclick:()=>{
+    if(missing(cur).length){showErrors=true;renderForm();const e=document.querySelector(".err");if(e)e.scrollIntoView({block:"center"});return;}
+    showErrors=false;step++;saveDraft();renderForm();window.scrollTo(0,0);}},"Suivant");
+  inn.replaceChildren(prev,mid,next);
+}
+
+/* ---------- Fiche de spécification + signaux ---------- */
+const j=(...xs)=>xs.filter(filled).map(x=>Array.isArray(x)?x.join(", "):x).join("\n");
+const lab=(t,v)=>filled(v)?`${t} : ${Array.isArray(v)?v.join(", "):v}`:"";
+function spec(a,q){
+  q=q||{};
+  return [
+   ["Problème métier", j(a.tache||a.besoinTxt, lab("Aujourd'hui",a.actuel), lab("Difficultés",a.probleme))],
+   ["Déclencheur", j(a.autoDecl&&("Déclencheur : "+a.autoDecl), lab("Lancement",a.lancement), lab("Outils",a.autoOutils))],
+   ["Entrées", j(lab("Formats",a.entreeTypes), lab("Nombre",a.nbDocs), lab("Volume",a.volume), lab("Nature",a.scannes), lab("Même structure",a.structure), lab("Accès",a.acces), a.docsDesc)],
+   ["Sensibilité", j(lab("Données",a.donnees), lab("Identifiants personnels",a.identifiants), lab("Très sensibles",a.tresSensibles), lab("Anonymisable",a.anonym), lab("Restrictions",a.restrictions), lab("Outil imposé",a.outilImpose))],
+   ["Traitement", j(lab("Usages",a.types), lab("Opérations",a.operations), lab("Étapes obligatoires",a.etapesOblig), lab("Ordre",a.ordre), lab("Recherche",a.recSources), lab("Champs à extraire",a.extChamps), lab("Langues",a.tradLangues))],
+   ["Sorties", j(lab("Formats",a.formats), lab("Longueur",a.longueur), lab("Récupération",a.recup), lab("Destination",a.destination), lab("Fichiers",a.nbFichiers), lab("Contenu",a.elements), lab("Modifiable",a.modifiable), a.precisionsSortie)],
+   ["Mise en forme", j(lab("Modèle",a.modeleDoc||a.modele), lab("Plan",a.plan), lab("Styles",a.styles), lab("Structure",a.structDoc), lab("Obligatoire",a.obligatoire), lab("À exclure",a.interdit), lab("Citer les sources",a.citerSources), lab("Structure initiale",a.fidelite))],
+   ["Contrôle", j(lab("Vérification avant usage",a.verifHumaine), lab("Contrôle humain obligatoire",a.controle), lab("Précision",a.precision), lab("Erreurs inacceptables",a.erreurs))],
+   ["Fréquence", j(lab("Fréquence",a.frequence), lab("Utilisations prévues",a.usages), lab("Temps par occurrence",a.temps), lab("Personnes",a.personnes), lab("Gain visé",a.gain))],
+   ["Faisabilité", j(lab("Outil pressenti",q.outil), q.faisabilite)],
+   ["Tests", j(lab("Exemple entrée/sortie",a.exempleIO), lab("Résultat concret",a.resultatConcret), lab("Critères de réussite",a.qualite), lab("Exemple",a.exempleLien))]
+  ];
+}
+function flags(a){
+  const f=[];
+  const sens=["Données personnelles sensibles","Données financières, RH, juridiques ou contractuelles confidentielles"];
+  if(sens.some(s=>has(a,"donnees",s))||a.tresSensibles==="Oui") f.push(["crit","Données","Données sensibles : validation par le référent données / DPO avant tout essai."]);
+  else if(has(a,"donnees","Données personnelles")||has(a,"donnees","Données professionnelles confidentielles")) f.push(["warn","Données","Données personnelles ou confidentielles : utiliser uniquement un outil autorisé ; anonymiser si possible."]);
+  if(has(a,"donnees",NSP)||a.identifiants===NSP) f.push(["warn","À vérifier","Sensibilité des données inconnue : à clarifier avec le demandeur."]);
+  if(a.scannes==="Scannés"||a.scannes==="Les deux"||has(a,"entreeTypes","Image / scanné")) f.push(["warn","Entrées","Documents scannés : reconnaissance de texte (OCR) à prévoir et à tester."]);
+  if(a.nbDocs==="Plus de 50"||a.volume==="Plus de 200 pages") f.push(["warn","Volume","Gros volume : traitement par lots ou workflow automatisé plutôt qu'un assistant conversationnel."]);
+  if(a.structure==="Non") f.push(["warn","Entrées","Structures hétérogènes : prévoir des règles d'extraction par type de document."]);
+  const rec=["Quotidienne","Hebdomadaire"].includes(a.frequence)||a.usages==="Chaque semaine ou plus";
+  if(rec&&(has(a,"types","Automatiser une tâche répétitive")||a.lancement==="Automatiquement")) f.push(["info","Piste","Tâche fréquente à automatiser : candidat pour un workflow no-code."]);
+  else if(a.frequence==="Ponctuelle"||a.usages==="Une seule fois") f.push(["info","Piste","Besoin ponctuel : un assistant IA avec un prompt bien construit suffit probablement."]);
+  if(a.modele==="Oui, un modèle existe"||a.modeleDoc==="Oui") f.push(["info","Sortie","Un modèle existe : le récupérer avant de construire la solution."]);
+  if(a.exempleIO!=="Oui, les deux") f.push(["warn","Tests","Pas d'exemple complet entrée + sortie attendue : à demander pour les tests."]);
+  if(a.precision==="Très élevé, aucune erreur tolérée") f.push(["crit","Risque","Zéro erreur tolérée : contrôle humain systématique et tests sur cas réels indispensables."]);
+  return f;
+}
+function specNode(a,q){
+  const t=el("div",{class:"spec"});
+  for(const [k,v] of spec(a,q)) t.append(el("div",{class:"row"},el("div",{class:"k"},k),el("div",{class:"v"},v||el("span",{class:"empty"},"Non renseigné"))));
+  return t;
+}
+function flagsNode(a){const fs=flags(a);if(!fs.length)return null;return el("div",{class:"flags"},fs.map(([k,l,t])=>el("div",{class:"flag "+k},el("b",null,l),el("span",null,t))));}
+function specText(a,q,meta){
+  let s=`FICHE DE SPÉCIFICATION — ${a.nom||"Cas d'usage"}\n`;
+  if(meta) s+=meta+"\n";
+  s+="\n";
+  for(const [k,v] of spec(a,q)) s+=`■ ${k}\n${v||"Non renseigné"}\n\n`;
+  const fs=flags(a); if(fs.length){s+="■ Points d'attention\n"+fs.map(f=>"- "+f[2]).join("\n")+"\n";}
+  return s;
+}
+async function copy(text){
+  try{await navigator.clipboard.writeText(text);toast("Fiche copiée");}
+  catch(e){const ta=el("textarea",{style:"position:fixed;opacity:0"});ta.value=text;document.body.append(ta);ta.select();try{document.execCommand("copy");toast("Fiche copiée");}catch(_){toast("Copie impossible : sélectionnez le texte");}ta.remove();}
+}
+
+function renderRecap(v){
+  const p=el("section",{class:"panel"});
+  p.append(el("div",null,el("span",{class:"eyebrow"},"Dernière étape"),el("h2",null,"Récapitulatif et envoi"),el("p",{class:"goal"},"Vérifiez la fiche générée à partir de vos réponses. Les rubriques vides peuvent être complétées plus tard avec l'équipe.")));
+  const miss=visibleSections().filter(s=>missing(s).length);
+  if(miss.length) p.append(el("div",{class:"note"},"Réponses obligatoires manquantes dans : ",miss.map(s=>s.short).join(", "),"."));
+  p.append(el("h3",{style:"margin:0;font-family:var(--display)"},A.nom||"Cas d'usage sans nom"));
+  const fl=flagsNode(A); if(fl) p.append(fl);
+  p.append(specNode(A));
+  p.append(el("div",{class:"note info"},CONFIG.relayUrl?"La demande sera enregistrée directement dans le tableau de suivi de l'équipe IA.":"En cliquant sur Envoyer, votre messagerie s'ouvre avec la fiche déjà rédigée, adressée à "+CONFIG.emailDestinataire+". Il vous restera à cliquer sur Envoyer dans votre messagerie."));
+  v.append(p);
+}
+
+async function submit(){
+  const miss=visibleSections().filter(s=>missing(s).length);
+  if(miss.length){step=stepsList().findIndex(s=>s.id===miss[0].id);showErrors=true;renderForm();window.scrollTo(0,0);return;}
+  const now=new Date();
+  const id="CU-"+now.toISOString().slice(0,10).replace(/-/g,"")+"-"+Math.random().toString(36).slice(2,6).toUpperCase();
+  const a=pruned(A);
+  const meta=`Référence ${id} · ${a.demandeur||"Demandeur"} · ${a.service||""} · envoyée le ${now.toLocaleDateString("fr-FR")}`;
+  const fiche=specText(a,null,meta);
+  if(CONFIG.relayUrl){
+    const row={reference:id,date:now.toISOString(),statut:"Nouvelle",fiche,pointsAttention:flags(a).map(f=>f[2]).join("\n")};
+    for(const k in a) row[k]=Array.isArray(a[k])?a[k].join(", "):a[k];
+    try{
+      const r=await fetch(CONFIG.relayUrl,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(row)});
+      if(!r.ok) throw new Error(r.status);
+    }catch(e){toast("L'envoi a échoué. Réessayez, ou envoyez la fiche par e-mail.");submitted={id,nom:a.nom,fiche,mode:"echec"};renderForm();return;}
+    submitted={id,nom:a.nom,fiche,mode:"grist"};
+  } else {
+    submitted={id,nom:a.nom,fiche,mode:"mail"};
+    openMail(submitted);
+  }
+  A={};step=0;showErrors=false;clearDraft();
+  renderForm();window.scrollTo(0,0);
+}
+function mailHref(sub,full){
+  const subject=`[Cas d'usage IA] ${sub.nom||""} (${sub.id})`;
+  const body=full?sub.fiche:`Bonjour,\n\nVoici ma demande de cas d'usage IA (réf. ${sub.id}).\n\n[Collez ici la fiche copiée depuis le formulaire]\n`;
+  return `mailto:${CONFIG.emailDestinataire}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+}
+function openMail(sub){
+  const full=mailHref(sub,true);
+  if(full.length<1900){location.href=full;return;}
+  copy(sub.fiche);           // fiche trop longue pour un lien e-mail : on la copie
+  location.href=mailHref(sub,false);
+}
+function pruned(a){const o={};for(const k in a)if(filled(a[k]))o[k]=a[k];return o;}
+
+function renderSuccess(){
+  const v=$("#view"),sub=submitted;
+  const p=el("section",{class:"panel success"});
+  if(sub.mode==="grist"){
+    p.append(el("span",{class:"eyebrow"},"Demande transmise"),el("div",{class:"big"},"Merci, votre cas d'usage est enregistré."),
+      el("p",{style:"margin:0"},`« ${sub.nom} » sera qualifié par l'équipe IA, qui reviendra vers vous pour les exemples et les points à préciser.`));
+  } else {
+    p.append(el("span",{class:"eyebrow"},sub.mode==="echec"?"Envoi non abouti":"Dernière étape"),
+      el("div",{class:"big"},"Envoyez l'e-mail qui vient de s'ouvrir."),
+      el("p",{style:"margin:0;max-width:62ch"},"Votre messagerie s'est ouverte avec la demande. Si la fiche n'apparaît pas dans le message, elle a été copiée : collez-la dans le corps de l'e-mail. Si rien ne s'est ouvert, copiez la fiche et envoyez-la à :"),
+      el("div",{class:"mono",style:"font-size:15px;user-select:all"},CONFIG.emailDestinataire),
+      el("div",{style:"display:flex;gap:10px;flex-wrap:wrap"},
+        el("button",{class:"btn primary",type:"button",onclick:()=>openMail(sub)},"Rouvrir l'e-mail"),
+        el("button",{class:"btn",type:"button",onclick:()=>copy(sub.fiche)},"Copier la fiche")));
+  }
+  p.append(el("div",{class:"mono",style:"font-size:12px;color:var(--muted)"},"Référence "+sub.id),
+    el("button",{class:"btn ghost",type:"button",onclick:()=>{submitted=null;renderForm();}},"Proposer un autre cas d'usage"));
+  v.append(p);renderBar();
+}
+
+function fillExample(){
+  A={nom:"Synthèse des comptes rendus de COPIL",service:"Systèmes d'information",demandeur:"Exemple",besoinTxt:"Produire chaque mois une synthèse des décisions et actions issues des comités de pilotage projets.",tache:"Relire les comptes rendus et consolider les décisions, risques et actions dans une note pour la direction.",actuel:"Lecture manuelle de 8 à 12 comptes rendus Word, copier-coller dans un modèle de note.",probleme:["Rédaction chronophage","Volume important de documents"],resultat:"Une note de 2 pages prête à relire.",frequence:"Mensuelle",temps:"2 h à 1 jour",urgence:"Normal",personnes:"2 à 5",
+   types:["Faire une synthèse ou un résumé","Produire un nouveau document"],entreeTypes:["Word"],dispo:"Oui",nbDocs:"6 à 20",volume:"10 à 50 pages",structure:"Partiellement",scannes:"Modifiables",tabImg:"Oui",memesSources:"Oui",acces:["Dossier partagé"],exemple:"Oui, sur demande",
+   donnees:["Données internes non confidentielles"],anonym:"Oui",formats:["Word (.docx)"],modele:"Oui, un modèle existe",longueur:"Synthétique (1 page max.)",recup:"Fichier à télécharger",destination:"Comité de direction",modifiable:"Oui",nbFichiers:"Un seul",elements:["Des tableaux"],multiSources:"Oui",reutil:"Non",
+   modeleDoc:"Oui",obligatoire:"Introduction, décisions par projet, tableau des actions (responsable, échéance), risques ouverts.",citerSources:"Oui",fidelite:"Non, elle peut être modifiée",
+   operations:["Lire et comprendre les documents","Extraire les informations nécessaires","Synthétiser ou analyser les résultats","Rédiger un contenu","Mettre en forme le document final"],verifHumaine:"Oui",lancement:"Manuellement",
+   resultatConcret:"Une note mensuelle relue en 20 minutes au lieu d'une demi-journée de rédaction.",precision:"Bon, avec relecture",erreurs:"Attribuer une action au mauvais responsable.",controle:"Oui",gain:"3 à 4 h par mois",usages:"Chaque mois",exempleIO:"Oui, les deux"};
+  saveDraft();renderForm();toast("Exemple chargé : modifiez-le ou effacez-le");
+}
+
+renderForm();
+})();
+</script>
+</body>
+</html>
