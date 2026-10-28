@@ -452,10 +452,8 @@ function mailHref(sub,full){
   return `mailto:${CONFIG.emailDestinataire}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 }
 function openMail(sub){
-  const full=mailHref(sub,true);
-  if(full.length<1900){location.href=full;return;}
-  copy(sub.fiche);           // fiche trop longue pour un lien e-mail : on la copie
-  location.href=mailHref(sub,false);
+  copy(sub.fiche);                    // copie de secours si la messagerie coupe le texte
+  location.href=mailHref(sub,true);   // fiche complète dans le corps de l'e-mail
 }
 function pruned(a){const o={};for(const k in a)if(filled(a[k]))o[k]=a[k];return o;}
 
