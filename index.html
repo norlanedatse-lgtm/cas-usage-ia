@@ -362,15 +362,15 @@ const lab=(t,v)=>filled(v)?`${t} : ${Array.isArray(v)?v.join(", "):v}`:"";
 function spec(a,q){
   q=q||{};
   return [
-   ["Problème métier", j(a.tache||a.besoinTxt, lab("Aujourd'hui",a.actuel), lab("Difficultés",a.probleme))],
+   ["Problème métier", j(lab("Besoin",a.besoinTxt), lab("Tâche à faciliter",a.tache), lab("Aujourd'hui",a.actuel), lab("Difficultés",a.probleme), lab("Résultat souhaité",a.resultat))],
    ["Déclencheur", j(a.autoDecl&&("Déclencheur : "+a.autoDecl), lab("Lancement",a.lancement), lab("Outils",a.autoOutils))],
-   ["Entrées", j(lab("Formats",a.entreeTypes), lab("Nombre",a.nbDocs), lab("Volume",a.volume), lab("Nature",a.scannes), lab("Même structure",a.structure), lab("Accès",a.acces), a.docsDesc)],
+   ["Entrées", j(lab("Formats",a.entreeTypes), lab("Nombre",a.nbDocs), lab("Volume",a.volume), lab("Documents disponibles",a.dispo), lab("Nature",a.scannes), lab("Même structure",a.structure), lab("Tableaux ou images",a.tabImg), lab("Sources toujours identiques",a.memesSources), lab("Accès",a.acces), lab("Exemple représentatif",a.exemple), a.docsDesc)],
    ["Sensibilité", j(lab("Données",a.donnees), lab("Identifiants personnels",a.identifiants), lab("Très sensibles",a.tresSensibles), lab("Anonymisable",a.anonym), lab("Restrictions",a.restrictions), lab("Outil imposé",a.outilImpose))],
-   ["Traitement", j(lab("Usages",a.types), lab("Opérations",a.operations), lab("Étapes obligatoires",a.etapesOblig), lab("Ordre",a.ordre), lab("Recherche",a.recSources), lab("Champs à extraire",a.extChamps), lab("Langues",a.tradLangues))],
-   ["Sorties", j(lab("Formats",a.formats), lab("Longueur",a.longueur), lab("Récupération",a.recup), lab("Destination",a.destination), lab("Fichiers",a.nbFichiers), lab("Contenu",a.elements), lab("Modifiable",a.modifiable), a.precisionsSortie)],
+   ["Traitement", j(lab("Usages",a.types), lab("Autre besoin",a.typeAutre), lab("Opérations",a.operations), lab("Étapes obligatoires",a.etapesOblig), lab("Ordre",a.ordre), lab("Sources à interroger",a.recSources), lab("Critères de pertinence",a.recFiltres), lab("Citer les références",a.recRef), lab("Champs à extraire",a.extChamps), lab("Destination des données",a.extCible), lab("Langues",a.tradLangues), lab("Rendu de traduction",a.tradTon))],
+   ["Sorties", j(lab("Formats",a.formats), lab("Longueur",a.longueur), lab("Récupération",a.recup), lab("Destination",a.destination), lab("Fichiers",a.nbFichiers), lab("Contenu",a.elements), lab("Modifiable",a.modifiable), lab("Plusieurs sources à reprendre",a.multiSources), lab("Réutilisation automatique",a.reutil), a.precisionsSortie)],
    ["Mise en forme", j(lab("Modèle",a.modeleDoc||a.modele), lab("Plan",a.plan), lab("Styles",a.styles), lab("Structure",a.structDoc), lab("Obligatoire",a.obligatoire), lab("À exclure",a.interdit), lab("Citer les sources",a.citerSources), lab("Structure initiale",a.fidelite))],
    ["Contrôle", j(lab("Vérification avant usage",a.verifHumaine), lab("Contrôle humain obligatoire",a.controle), lab("Précision",a.precision), lab("Erreurs inacceptables",a.erreurs))],
-   ["Fréquence", j(lab("Fréquence",a.frequence), lab("Utilisations prévues",a.usages), lab("Temps par occurrence",a.temps), lab("Personnes",a.personnes), lab("Gain visé",a.gain))],
+   ["Fréquence", j(lab("Urgence",a.urgence), lab("Fréquence",a.frequence), lab("Utilisations prévues",a.usages), lab("Temps par occurrence",a.temps), lab("Personnes",a.personnes), lab("Gain visé",a.gain))],
    ["Faisabilité", j(lab("Outil pressenti",q.outil), q.faisabilite)],
    ["Tests", j(lab("Exemple entrée/sortie",a.exempleIO), lab("Résultat concret",a.resultatConcret), lab("Critères de réussite",a.qualite), lab("Exemple",a.exempleLien))]
   ];
